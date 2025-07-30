@@ -41,6 +41,16 @@ android {
 
 dependencies {
 
+    //Navigation Dependency
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    //Material Dependecy Bottom Nav Bar
+    implementation("androidx.compose.material:material:1.6.2")
+    implementation (libs.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation (libs.androidx.runtime.livedata)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">FoodApp</string>
+    <string name="home">Home</string>
+    <string name="What_would_you_like">What would you like to eat?</string>
+    <string name="popular_items">Popular items</string>
+    <string name="categories">Categories</string>
 </resources>
