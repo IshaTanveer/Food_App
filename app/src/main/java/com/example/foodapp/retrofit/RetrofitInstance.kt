@@ -5,11 +5,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     private const val baseUrl = "https://www.themealdb.com/api/json/v1/1/"
-    fun getInstance(): Retrofit {
+    private fun getInstance(): Retrofit {
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
     val randomMealApi: RandomMealApi = getInstance().create(RandomMealApi::class.java)
+    val mealByIdApi: MealByIdApi = getInstance().create(MealByIdApi::class.java)
 }

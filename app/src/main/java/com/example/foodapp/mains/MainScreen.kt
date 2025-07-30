@@ -102,7 +102,7 @@ fun MainScreen(myViewModel: MealViewModel){
             composable("detail/{mealId}") { backStackEntry ->
                 val mealId = backStackEntry.arguments?.getString("mealId")
                 if (mealId != null) {
-                    MealDetailScreen(meadId = mealId)
+                    MealDetailScreen(meadId = mealId, myViewModel = myViewModel)
                 }
             }
         }

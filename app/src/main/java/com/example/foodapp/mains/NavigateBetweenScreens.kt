@@ -9,9 +9,9 @@ import com.example.foodapp.views.HomeScreen
 
 @Composable
 fun NavTab(modifier: Modifier = Modifier, selectedIndex: Int, myViewModel: MealViewModel){
-    when(selectedIndex){
+    /*when(selectedIndex){
         0 -> HomeScreen(modifier, myViewModel, onClick = {} )
         1 -> FavouritesScreen(modifier)
         2 -> CategoriesScreen(modifier)
-    }
+    }*/
 }
