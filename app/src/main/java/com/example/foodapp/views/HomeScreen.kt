@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,15 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import com.bumptech.glide.integration.compose.GlideImage
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.example.foodapp.pojo.CategoryItems
 import com.example.foodapp.R
+import com.example.foodapp.retrofit.CategoriesModel
 import com.example.foodapp.retrofit.NetworkResponse
 import com.example.foodapp.retrofit.PopularMealModel
 import com.example.foodapp.retrofit.RandomMealModel
@@ -57,28 +56,18 @@ import com.example.foodapp.viewModel.MealViewModel
 fun HomeScreen(
     modifier: Modifier = Modifier,
     myViewModel: MealViewModel,
-    onClick: (String) -> Unit
+    onClick: (String) -> Unit,
+    onCategoryClick: (String) -> Unit
 ){
     LaunchedEffect(Unit) {
         myViewModel.getRandomMeal()
         myViewModel.getPopularMeal()
+        myViewModel.getCategories()
     }
     val randomMeal = myViewModel.randomMeal.observeAsState()
     val poplarMeal = myViewModel.popularMeal.observeAsState()
-    val categoriesList = listOf(
-        CategoryItems("Dessert", painterResource(id = R.drawable.dessert)),
-        CategoryItems("Chicken", painterResource(id = R.drawable.chicken)),
-        CategoryItems("Beef", painterResource(id = R.drawable.beef)),
-        CategoryItems("vegetables", painterResource(id = R.drawable.vegetable)),
-        CategoryItems("Sea Food", painterResource(id = R.drawable.seafood)),
-        CategoryItems("Rice", painterResource(id = R.drawable.rice)),
-        CategoryItems("Chaat", painterResource(id = R.drawable.chaat)),
-        CategoryItems("Soup", painterResource(id = R.drawable.soup)),
-        CategoryItems("Wraps", painterResource(id = R.drawable.wrap)),
-        CategoryItems("Pasta", painterResource(id = R.drawable.pasta)),
-        CategoryItems("Drinks", painterResource(id = R.drawable.drink)),
-        CategoryItems("Bread", painterResource(id = R.drawable.bread))
-    )
+    val categories = myViewModel.categories.observeAsState()
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -130,7 +119,78 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
         item {
-            CategoryButtons(categoriesList)
+            CategoryButtons(categories, onCategoryClick, onClick)
+        }
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun CategoryButtons(
+    categories: State<NetworkResponse<CategoriesModel>?>,
+    onCategoryClick: (String) -> Unit,
+    onClick: (String) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(500.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        when(val result = categories.value){
+            is NetworkResponse.Failure -> {
+                item {
+                    Text(text = "Failed to load!")
+                }
+            }
+            NetworkResponse.Loading -> {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center){
+                        CircularProgressIndicator()
+                    }
+
+                }
+            }
+            is NetworkResponse.Success -> {
+                items(result.data.categories){ items ->
+                    Button(
+                        onClick = {},
+                        modifier = Modifier,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent
+                        ),
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            GlideImage(
+                                modifier = Modifier
+                                    .width(100.dp)
+                                    .height(70.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        onCategoryClick(items.strCategory)
+                                    },
+                                model = items.strCategoryThumb,
+                                contentDescription = stringResource(R.string.What_would_you_like),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = items.strCategory,
+                                color = Color.Black,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                        }
+                    }
+                }
+            }
+            null -> {}
         }
     }
 }
@@ -220,45 +280,6 @@ fun Header(){
             contentDescription = "Search",
             Modifier.size(40.dp)
         )
-    }
-}
-@Composable
-fun CategoryButtons(categoriesList: List<CategoryItems>){
-    LazyHorizontalGrid(
-        rows = GridCells.Fixed(4),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(400.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        items(categoriesList){ items ->
-            Button(
-                onClick = {},
-                modifier = Modifier,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        painter = items.image,
-                        contentDescription = "Dessert",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(50.dp)
-                    )
-                    Text(
-                        text = items.title,
-                        color = Color.Black,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                }
-            }
-        }
     }
 }
 @Composable

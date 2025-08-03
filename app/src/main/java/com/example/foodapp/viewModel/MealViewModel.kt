@@ -1,11 +1,11 @@
 package com.example.foodapp.viewModel
 
-import android.support.v4.os.IResultReceiver._Parcel
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.foodapp.retrofit.CategoriesModel
 import com.example.foodapp.retrofit.MealByIdModel
 import com.example.foodapp.retrofit.NetworkResponse
 import com.example.foodapp.retrofit.PopularMealModel
@@ -27,12 +27,60 @@ class MealViewModel: ViewModel() {
     private val _popularMeal = MutableLiveData<NetworkResponse<PopularMealModel>>()
     val popularMeal:LiveData<NetworkResponse<PopularMealModel>> = _popularMeal
 
+    private val categoriesApi = RetrofitInstance.categoriesApi
+    private val _categories = MutableLiveData<NetworkResponse<CategoriesModel>>()
+    val categories:LiveData<NetworkResponse<CategoriesModel>> = _categories
+
+    private val mealByCategoryApi = RetrofitInstance.popularMealApi
+    private val _mealByCategory = MutableLiveData<NetworkResponse<PopularMealModel>>()
+    val mealByCategory:LiveData<NetworkResponse<PopularMealModel>> = _mealByCategory
+
+    fun getMealByCategory(category: String){
+        viewModelScope.launch {
+            _mealByCategory.value = NetworkResponse.Loading
+            val response = mealByCategoryApi.getPopularMeal(category = category)
+            if (response.isSuccessful){
+                Log.i("My Meal By Category: ", response.body().toString())
+                response.body()?.let {
+                    _mealByCategory.value = NetworkResponse.Success(it)
+                }
+            }
+            else{
+                Log.i("My Meal By Category: My Error: ", response.message())
+                Log.i("My Meal By Category: API Error Code", response.code().toString())
+                Log.i("My Meal By Category: API Error Message", response.message())
+                Log.i("My Meal By Category: API Error Body", response.errorBody()?.string() ?: "null")
+                _mealByCategory.value = NetworkResponse.Failure("Failed to load meal!")
+            }
+        }
+    }
+
+    fun getCategories(){
+        viewModelScope.launch {
+            _categories.value = NetworkResponse.Loading
+            val response = categoriesApi.getCategories()
+            if (response.isSuccessful){
+                Log.i("My Response: ", response.body().toString())
+                response.body()?.let {
+                    _categories.value = NetworkResponse.Success(it)
+                }
+            }
+            else{
+                Log.i("My Error: ", response.message())
+                Log.i("API Error Code", response.code().toString())
+                Log.i("API Error Message", response.message())
+                Log.i("API Error Body", response.errorBody()?.string() ?: "null")
+                _categories.value = NetworkResponse.Failure("Failed to load!")
+            }
+        }
+    }
+
     fun getPopularMeal(){
         viewModelScope.launch {
             _randomMeal.value = NetworkResponse.Loading
             val response = popularMealApi.getPopularMeal(category = "Seafood")
             if (response.isSuccessful){
-                Log.i("My Response: ", response.body().toString() )
+                Log.i("My Response: ", response.body().toString())
                 response.body()?.let {
                     _popularMeal.value = NetworkResponse.Success(it)
                 }

@@ -15,4 +15,5 @@ object RetrofitInstance {
     val randomMealApi: MealApi = getInstance().create(MealApi::class.java)
     val mealByIdApi: MealApi = getInstance().create(MealApi::class.java)
     val popularMealApi: MealApi = getInstance().create(MealApi::class.java)
+    val categoriesApi: MealApi = getInstance().create(MealApi::class.java)
 }

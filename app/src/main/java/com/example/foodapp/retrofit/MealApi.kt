@@ -19,4 +19,7 @@ interface MealApi {
         @Query("c") category: String
     ):Response<PopularMealModel>
 
+    @GET("categories.php")
+    suspend fun getCategories():Response<CategoriesModel>
+
 }

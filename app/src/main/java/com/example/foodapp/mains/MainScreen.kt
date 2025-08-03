@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.foodapp.views.Categories
 import com.example.foodapp.views.CategoriesScreen
 import com.example.foodapp.views.FavouritesScreen
 import com.example.foodapp.views.HomeScreen
@@ -89,7 +90,9 @@ fun MainScreen(myViewModel: MealViewModel){
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                HomeScreen(myViewModel = myViewModel, onClick = { mealId ->
+                HomeScreen(myViewModel = myViewModel, onCategoryClick = { mealCategory ->
+                    navController.navigate("categoryDetails/$mealCategory")
+                } , onClick = { mealId ->
                     navController.navigate("detail/$mealId")
                 })
             }
@@ -103,6 +106,17 @@ fun MainScreen(myViewModel: MealViewModel){
                 val mealId = backStackEntry.arguments?.getString("mealId")
                 if (mealId != null) {
                     MealDetailScreen(meadId = mealId, myViewModel = myViewModel)
+                }
+            }
+            composable("categoryDetails/{mealCategory}") { backStackEntry ->
+                val mealCategory = backStackEntry.arguments?.getString("mealCategory")
+                if (mealCategory != null) {
+                    Categories(
+                        mealCategory = mealCategory,
+                        myViewModel = myViewModel,
+                        onClick = { mealId ->
+                        navController.navigate("detail/$mealId")
+                    })
                 }
             }
         }
