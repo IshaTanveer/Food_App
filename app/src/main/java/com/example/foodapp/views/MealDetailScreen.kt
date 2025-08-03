@@ -1,6 +1,7 @@
 package com.example.foodapp.views
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,9 +26,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -47,10 +54,20 @@ fun MealDetailScreen(
     val mealById = myViewModel.mealById.observeAsState()
     when(val result = mealById.value){
         is NetworkResponse.Failure -> {
-            Text(text = "Failed to load Details!")
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Failed to load Details!")
+            }
         }
         NetworkResponse.Loading -> {
-            CircularProgressIndicator()
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
         is NetworkResponse.Success -> {
             LazyColumn(
@@ -88,19 +105,18 @@ fun MealDetailScreen(
 @Composable
 fun CenterRow(result: MealByIdModel) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(end = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Text(
+            text = result.meals[0].strCategory,
+            style = MaterialTheme.typography.titleMedium
+        )
         Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+            modifier = Modifier,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = result.meals[0].strCategory,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.width(30.dp))
             Icon(
                 imageVector = Icons.Default.LocationOn,
                 contentDescription = "Location",
@@ -112,18 +128,28 @@ fun CenterRow(result: MealByIdModel) {
                 style = MaterialTheme.typography.titleMedium
             )
         }
-        Row(
-            modifier = Modifier,
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ) {
-            IconButton( onClick = {} ) {
-                Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = "Location",
-                    Modifier.size(35.dp)
-                )
+        Text(
+            buildAnnotatedString {
+                result.meals[0].strYoutube.trim().replace("\\", "").let {
+                    LinkAnnotation.Url(
+                        it,
+                        TextLinkStyles(style = SpanStyle(color = Color.Blue))
+                    )
+                }.let {
+                    withLink(
+                        it
+                    ) {
+                        append("YOUTUBE")
+                    }
+                }
             }
+        )
+        IconButton( onClick = {} ) {
+            Icon(
+                imageVector = Icons.Default.FavoriteBorder,
+                contentDescription = "favourite",
+                Modifier.size(35.dp)
+            )
         }
     }
 }

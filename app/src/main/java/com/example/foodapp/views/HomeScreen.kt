@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,12 +46,13 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.example.foodapp.pojo.CategoryItems
 import com.example.foodapp.R
 import com.example.foodapp.retrofit.NetworkResponse
+import com.example.foodapp.retrofit.PopularMealModel
+import com.example.foodapp.retrofit.RandomMealModel
 import com.example.foodapp.ui.theme.FoodAppTheme
 import com.example.foodapp.viewModel.MealViewModel
 
 
 @SuppressLint("ViewModelConstructorInComposable")
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -60,8 +61,10 @@ fun HomeScreen(
 ){
     LaunchedEffect(Unit) {
         myViewModel.getRandomMeal()
+        myViewModel.getPopularMeal()
     }
     val randomMeal = myViewModel.randomMeal.observeAsState()
+    val poplarMeal = myViewModel.popularMeal.observeAsState()
     val categoriesList = listOf(
         CategoryItems("Dessert", painterResource(id = R.drawable.dessert)),
         CategoryItems("Chicken", painterResource(id = R.drawable.chicken)),
@@ -97,32 +100,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
         item {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(220.dp),
-                contentAlignment = Alignment.Center
-            ){
-                when(val result = randomMeal.value){
-                    is NetworkResponse.Failure -> {
-                        Text(text = "Failed to load image.")
-                    }
-                    NetworkResponse.Loading -> {
-                        CircularProgressIndicator()
-                    }
-                    is NetworkResponse.Success -> {
-                        GlideImage(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable {
-                                    onClick(result.data.meals[0].idMeal)
-                                },
-                            model = result.data.meals[0].strMealThumb,
-                            contentDescription = stringResource(R.string.popular_items),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    null -> {}
-                }
-            }
+            RandomItem(randomMeal, onClick)
         }
         item {
             Spacer(modifier = Modifier.height(20.dp))
@@ -137,24 +115,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
         item {
-            Row{
-                LazyRow(content = {
-                    items(100, itemContent = {
-                        GlideImage(
-                            modifier = Modifier
-                                .width(170.dp)
-                                .height(120.dp)
-                                .padding(end = 20.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable {},
-                            model = "",
-                            contentDescription = stringResource(R.string.popular_items),
-                            contentScale = ContentScale.Crop,
-                            failure = placeholder(R.drawable.place_holder)
-                        )
-                    })
-                })
-            }
+            PopularItems(poplarMeal, onClick)
         }
         item {
             Spacer(modifier = Modifier.height(20.dp))
@@ -173,6 +134,76 @@ fun HomeScreen(
         }
     }
 }
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun RandomItem(randomMeal: State<NetworkResponse<RandomMealModel>?>, onClick: (String) -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth().height(220.dp),
+        contentAlignment = Alignment.Center
+    ){
+        when(val result = randomMeal.value){
+            is NetworkResponse.Failure -> {
+                Text(text = "Failed to load image.")
+            }
+            NetworkResponse.Loading -> {
+                CircularProgressIndicator()
+            }
+            is NetworkResponse.Success -> {
+                GlideImage(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            onClick(result.data.meals[0].idMeal)
+                        },
+                    model = result.data.meals[0].strMealThumb,
+                    contentDescription = stringResource(R.string.What_would_you_like),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            null -> {}
+        }
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun PopularItems(poplarMeal: State<NetworkResponse<PopularMealModel>?>, onClick: (String) -> Unit) {
+    Row{
+        LazyRow(content = {
+            items(10, itemContent = {
+                when(val result = poplarMeal.value){
+                    is NetworkResponse.Failure -> {
+                        Text(
+                            text = "Failed to load!"
+                        )
+                    }
+                    NetworkResponse.Loading -> {
+                        CircularProgressIndicator()
+                    }
+                    is NetworkResponse.Success -> {
+                        GlideImage(
+                            modifier = Modifier
+                                .width(170.dp)
+                                .height(120.dp)
+                                .padding(end = 20.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    onClick(result.data.meals[it].idMeal)
+                                },
+                            model = result.data.meals[it].strMealThumb,
+                            contentDescription = stringResource(R.string.popular_items),
+                            contentScale = ContentScale.Crop,
+                            //failure = placeholder(R.drawable.place_holder)
+                        )
+                    }
+                    null -> {}
+                }
+            })
+        })
+    }
+}
+
 @Composable
 fun Header(){
     Row(

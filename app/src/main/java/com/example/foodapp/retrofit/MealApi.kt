@@ -4,9 +4,19 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface MealByIdApi {
+interface MealApi {
+
+    @GET("random.php")
+    suspend fun getRandomMeal():Response<RandomMealModel>
+
     @GET("lookup.php")
     suspend fun getMealById(
         @Query("i") id: String
     ):Response<MealByIdModel>
+
+    @GET("filter.php")
+    suspend fun getPopularMeal(
+        @Query("c") category: String
+    ):Response<PopularMealModel>
+
 }

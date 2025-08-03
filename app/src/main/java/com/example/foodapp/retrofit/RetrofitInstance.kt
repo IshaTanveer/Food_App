@@ -2,6 +2,7 @@ package com.example.foodapp.retrofit
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 
 object RetrofitInstance {
     private const val baseUrl = "https://www.themealdb.com/api/json/v1/1/"
@@ -11,6 +12,7 @@ object RetrofitInstance {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-    val randomMealApi: RandomMealApi = getInstance().create(RandomMealApi::class.java)
-    val mealByIdApi: MealByIdApi = getInstance().create(MealByIdApi::class.java)
+    val randomMealApi: MealApi = getInstance().create(MealApi::class.java)
+    val mealByIdApi: MealApi = getInstance().create(MealApi::class.java)
+    val popularMealApi: MealApi = getInstance().create(MealApi::class.java)
 }
